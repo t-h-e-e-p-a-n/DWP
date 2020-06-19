@@ -1,0 +1,92 @@
+{
+	"info": {
+		"_postman_id": "2503ca3d-445f-428a-84dd-cb8743087718",
+		"name": "HerokuTestAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "UserE2E",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "67acce22-91ba-48c0-9814-ccae825d5e64",
+						"exec": [
+							"pm.sendRequest(\"http://bpdts-test-app-v2.herokuapp.com/users\", function (err, response) {\r",
+							"    var jsonRespUser=response.json();\r",
+							"    pm.environment.set(\"jsonRespUser\",jsonRespUser);\r",
+							"    var userLength=jsonRespUser.length;\r",
+							"    var iIndex=pm.environment.get(\"iIndex\");\r",
+							"    if(iIndex===undefined){\r",
+							"        iIndex=0;\r",
+							"        pm.environment.set(\"iIndex\",iIndex);\r",
+							"        pm.environment.set(\"iUserLength\",userLength);\r",
+							"    }\r",
+							"    if(iIndex>=0 && iIndex<userLength){\r",
+							"            pm.environment.set(\"UserID\",jsonRespUser[iIndex].id);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "88c37dcb-4ea4-445a-b42a-539ffdfaefff",
+						"exec": [
+							"var iIndex=Number(pm.environment.get(\"iIndex\"));\r",
+							"var iUserLength=Number(pm.environment.get(\"iUserLength\"));\r",
+							"iIndex=iIndex+1\r",
+							"pm.environment.set(\"iIndex\",iIndex);\r",
+							"if(iIndex<iUserLength){\r",
+							"    var userID=pm.environment.get(\"UserID\");\r",
+							"    var jsonData = pm.response.json();\r",
+							"    var strCity=jsonData.city;\r",
+							"    var sURL=\"http://bpdts-test-app-v2.herokuapp.com/city/\"+strCity+\"/users\";\r",
+							"    pm.sendRequest(sURL, function (err, response) {\r",
+							"        var jsonRespCity=response.json();\r",
+							"        var userLength=jsonRespCity.length;\r",
+							"        var bFound=false;\r",
+							"        for(var iEachUser=0;iEachUser<=userLength+1;iEachUser++){\r",
+							"            if(userID===jsonRespCity[iEachUser].id){\r",
+							"                bFound=true;\r",
+							"                break;\r",
+							"            }\r",
+							"        }\r",
+							"        pm.test(\"Check ID=\"+userID +\" exist in City=\"+strCity, function () {\r",
+							"            pm.expect(bFound).to.eql(true);\r",
+							"        });\r",
+							"    });\r",
+							"    postman.setNextRequest(\"UserE2E\");\r",
+							"}else{\r",
+							"    postman.setNextRequest()\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://bpdts-test-app-v2.herokuapp.com/user/{{UserID}}",
+					"protocol": "http",
+					"host": [
+						"bpdts-test-app-v2",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"user",
+						"{{UserID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
